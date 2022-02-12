@@ -1,17 +1,18 @@
 
 
-class InvalidApiKey(Exception):
-    "Invalid API key. Please see http://openweathermap.org/faq#error401 for more info"
+class CRUDInvalidCityName(Exception):
+    "Invalid date format was used"
 
-    def __init__(self, cod, msg):
+    def __init__(self, cod, city_name):
         self.cod = cod
-        self.msg = msg
+        self.city_name = city_name
+        self.desc = f"Invalid city name was use: '{city_name}' !"
         self.desc_json = {
             "code": cod,
-            "message": self.msg
+            "message": self.desc
         }
 
-class InvalidDateFormat(Exception):
+class CRUDInvalidDateFormat(Exception):
     "Invalid date format was used"
 
     def __init__(self, cod):

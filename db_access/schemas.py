@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class City(BaseModel):
@@ -18,4 +18,14 @@ class Weather(BaseModel):
     city_name: str
     temp: float
     feels_like: float
-    dt_time: datetime
+    datetime: datetime
+
+
+class WeatherInCurrent(BaseModel):
+    dt: int
+    temp: float
+    feels_like: float
+
+
+class WeatherIn(BaseModel):
+    current: WeatherInCurrent
