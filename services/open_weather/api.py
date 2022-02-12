@@ -1,4 +1,7 @@
+from datetime import datetime
 import aiohttp
+
+from .exceptions import InvalidApiKey
 
 from config import load_config
 
@@ -10,15 +13,20 @@ payload={
     "exclude": "hourly",
     "units": "metric",
     "lang": "ru",
-    "api_key": cfg.API.KEY,
+    "appid": cfg.API.KEY,
 }
 
 
 session = aiohttp.ClientSession(cfg.API.URL)
 
-async def get_current_time_weather():
-    
-    async with session.get("/onecall") as resp:
+async def check_access_and_valid_data(resp_json: dict):
+    if resp_json.get("cod") == 401:
+        raise InvalidApiKey(resp_json["cod"], resp_json["message"])
+
+async def get_weather_by_time(lang: str, dt: datetime):   
+    async with session.get("/data/2.5/onecall", params=payload) as resp:
         resp_json = await resp.json()
-        print(resp)   
-    session.close()
+        print(resp_json)
+        await check_access_and_valid_data(resp_json)
+        return resp_json
+    await session.close()

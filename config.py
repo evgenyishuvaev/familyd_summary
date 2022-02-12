@@ -6,6 +6,7 @@ from environs import Env
 @dataclass
 class DBAccess:
     
+    DRIVER: str
     NAME: str
     USERNAME: str
     PASSWORD: str
@@ -34,6 +35,7 @@ def load_config(path_to_env: str = ".env"):
 
     return Config(
         DB=DBAccess(
+            DRIVER=env.str("DB_DRIVER"),
             NAME=env.str("DB_NAME"),
             USERNAME=env.str("DB_USERNAME"),
             PASSWORD=env.str("DB_PASSWORD"),
