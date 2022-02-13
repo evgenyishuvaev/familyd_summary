@@ -20,7 +20,7 @@ payload={
 
 session = aiohttp.ClientSession(cfg.API.URL)
 
-async def check_access_and_valid_data(resp_json: dict, session: aiohttp.ClientSession):
+async def check_access_and_valid_error(resp_json: dict, session: aiohttp.ClientSession):
     
     if resp_json.get("cod") == 400:
         await session.close()
@@ -29,11 +29,12 @@ async def check_access_and_valid_data(resp_json: dict, session: aiohttp.ClientSe
     if resp_json.get("cod") == 401:
         await session.close()
         raise InvalidApiKey(resp_json["cod"], resp_json["message"])
+    
 
-
-async def get_weather_from_api(lat: float, lon: float, lang: str, dt: str):
-
-
+async def get_historical_weather_from_api(lat: float, lon: float, lang: str, dt: str):
+    """Request weather data from Open Weather Map API
+       from endpoint: https://api.openweathermap.org/data/2.5/onecall/timemachine
+    """
     try:
         time_stamp = int(datetime.strptime(dt, "%Y:%m:%dT%H:%M").timestamp())
         print(time_stamp)
@@ -45,6 +46,6 @@ async def get_weather_from_api(lat: float, lon: float, lang: str, dt: str):
     async with session.get("/data/2.5/onecall/timemachine", params=payload) as resp:
         resp_json = await resp.json()
         print(resp_json)
-        await check_access_and_valid_data(resp_json, session)    
+        await check_access_and_valid_error(resp_json, session)    
     await session.close()
     return resp_json

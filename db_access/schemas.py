@@ -13,13 +13,28 @@ class City(BaseModel):
     lon: float
 
 
+class WeatherJSONResponse(BaseModel):
+    city_name: str
+    temp: float
+    feels_like: float
+    datetime: int
+
+
 class Weather(BaseModel):
-    id: int
     city_name: str
     temp: float
     feels_like: float
     datetime: datetime
 
+    def for_json_response(self):
+        """Return serializeble data, e.g convert datetime -> int"""
+
+        return WeatherJSONResponse(
+            city_name=self.city_name,
+            temp=self.temp,
+            feels_like=self.feels_like,
+            datetime= int(datetime.timestamp(self.datetime))
+            ).dict()
 
 class WeatherInCurrent(BaseModel):
     dt: int
@@ -29,3 +44,6 @@ class WeatherInCurrent(BaseModel):
 
 class WeatherIn(BaseModel):
     current: WeatherInCurrent
+
+
+
