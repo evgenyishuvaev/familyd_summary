@@ -3,7 +3,7 @@ from datetime import datetime
 
 from .database import metadata, engine, database
 from .models import city, weather
-from .exceptions import CRUDInvalidCityName, CRUDInvalidDateFormat
+from .exceptions import CRUDInvalidCityOrCountryCodeName, CRUDInvalidDateFormat
 
 
 def init_db():
@@ -38,8 +38,8 @@ async def get_weather_by_name_and_datetime(city_name: str, dt_time: int):
         date_time = datetime.strptime(dt_time, "%Y:%m:%dT%H:%M")
     except ValueError:
         raise CRUDInvalidDateFormat(cod=400)
+    
     await database.connect()
-
     query = weather.select().where(
         weather.c.city_name == city_name,
         weather.c.datetime == date_time
@@ -50,8 +50,8 @@ async def get_weather_by_name_and_datetime(city_name: str, dt_time: int):
 
 
 async def insert_weather(city_name: str, temp: float, feels_like: float, date_time: int):
+    
     await database.connect()
-
     query = weather.insert().values(
         city_name=city_name,
         temp=temp,
@@ -60,12 +60,12 @@ async def insert_weather(city_name: str, temp: float, feels_like: float, date_ti
         )
     result = await database.execute(query)
     await database.disconnect()
-    return query
+    return result
+
 
 async def get_city_by_name_and_country_code(city_name: str, country_code: str):
 
     await database.connect()
-
     query = city.select().where(
         city.c.name == city_name,
         city.c.country_code == country_code
@@ -74,6 +74,5 @@ async def get_city_by_name_and_country_code(city_name: str, country_code: str):
     await database.disconnect()
 
     if result == None:
-        raise CRUDInvalidCityName(cod=400, city_name=city_name)
-
+        raise CRUDInvalidCityOrCountryCodeName(cod=400, city_name=city_name, cr_code=country_code)
     return result

@@ -10,10 +10,11 @@ from db_access.crud import (
     insert_weather
     )
 from db_access.schemas import Weather, WeatherIn, WeatherInCurrent, WeatherJSONResponse
-from db_access.exceptions import CRUDInvalidCityName, CRUDInvalidDateFormat
+from db_access.exceptions import CRUDInvalidCityOrCountryCodeName, CRUDInvalidDateFormat
 
-from services.open_weather.api import get_historical_weather_from_api
+from services.open_weather.api import get_weather_from_api
 from services.open_weather.exceptions import InvalidApiKey, InvalidDateFormat
+
 
 app = FastAPI()
 
@@ -26,8 +27,8 @@ async def invalid_api_handler(request: Request, exc: InvalidApiKey):
 async def invalid_date_fromat(request: Request, exc: InvalidDateFormat):
     return JSONResponse(status_code=exc.cod, content=exc.desc_json)
 
-@app.exception_handler(CRUDInvalidCityName)
-async def invalid_city_name(request: Request, exc: CRUDInvalidCityName):
+@app.exception_handler(CRUDInvalidCityOrCountryCodeName)
+async def invalid_city_name(request: Request, exc: CRUDInvalidCityOrCountryCodeName):
     return JSONResponse(status_code=400, content= exc.desc_json)
 
 @app.exception_handler(CRUDInvalidDateFormat)
@@ -46,21 +47,18 @@ async def import_json():
 @app.get("/weather", response_model=WeatherJSONResponse)
 async def get_and_return_weather(country_code: str, city: str, date: str):
 
-    db_weather = await get_weather_by_name_and_datetime(city_name=city, dt_time=date)
-    
+    db_weather = await get_weather_by_name_and_datetime(city_name=city, dt_time=date)    
     if db_weather:
         weather = Weather.parse_obj(db_weather)
         return JSONResponse(content=weather.for_json_response())
     
     db_city = await get_city_by_name_and_country_code(city, country_code)
-
-    resp_weather = await get_historical_weather_from_api(
+    resp_weather = await get_weather_from_api(
                                             lat=db_city.lat,
                                             lon=db_city.lon,
                                             lang=country_code,
                                             dt=date
                                             )
-
     weather = WeatherIn.parse_obj(resp_weather)
     await insert_weather(
         city_name=city,
@@ -68,7 +66,6 @@ async def get_and_return_weather(country_code: str, city: str, date: str):
         feels_like=weather.current.feels_like,
         date_time=weather.current.dt
         )
-
     return JSONResponse(
         content=WeatherJSONResponse(
             city_name=city,

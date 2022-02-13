@@ -4,8 +4,7 @@ from environs import Env
 
 
 @dataclass
-class DBAccess:
-    
+class DBAccess:    
     DRIVER: str
     NAME: str
     USERNAME: str
@@ -16,14 +15,12 @@ class DBAccess:
 
 @dataclass
 class APIData:
-
     URL: str
     KEY: str
 
 
 @dataclass
 class Config:
-
     DB: DBAccess
     API: APIData
 
@@ -32,7 +29,6 @@ def load_config(path_to_env: str = ".env"):
 
     env = Env()
     env.read_env(path_to_env)
-
     return Config(
         DB=DBAccess(
             DRIVER=env.str("DB_DRIVER"),
