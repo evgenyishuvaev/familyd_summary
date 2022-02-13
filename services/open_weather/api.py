@@ -2,7 +2,12 @@ from multiprocessing.sharedctypes import Value
 import aiohttp
 from datetime import datetime
 
-from .exceptions import InvalidApiKey, InvalidDateFormat
+from .exceptions import (
+    InvalidApiKey,
+    InvalidDateFormat,
+    OutOfAllowedRangeDate,
+    OutOfAllowedTwoDaysRangeDate
+    )
 
 from config import load_config
 
@@ -11,7 +16,7 @@ cfg = load_config()
 payload={
     "lat": None,
     "lon": None,
-    "exclude": "hourly,daily,minutely,alerts",
+    "exclude": "",
     "units": "metric",
     "lang": "ru",
     "appid": cfg.API.KEY,
@@ -29,7 +34,10 @@ async def check_access_and_valid_error(resp_json: dict, session: aiohttp.ClientS
     if resp_json.get("cod") == 401:
         await session.close()
         raise InvalidApiKey(resp_json["cod"], resp_json["message"])
-
+    
+    if resp_json.get("message") == "requested time is out of allowed range of 5 days back":
+        await session.close()
+        raise OutOfAllowedRangeDate(resp_json["cod"])
 
 async def get_weather_from_api(lat: float, lon: float, lang: str, dt: str):
 
@@ -37,6 +45,11 @@ async def get_weather_from_api(lat: float, lon: float, lang: str, dt: str):
         date_time = datetime.strptime(dt, "%Y:%m:%dT%H:%M")
     except ValueError:
         raise InvalidDateFormat(cod=400)
+
+    time_delta = date_time - datetime.now()
+
+    if time_delta.days > 2:
+        raise OutOfAllowedTwoDaysRangeDate(cod=400)
 
     time_stamp = int(date_time.timestamp())
     if time_stamp < datetime.now().timestamp():
@@ -52,11 +65,13 @@ async def get_forecast_weather(lat: float, lon: float, lang: str, dt: int):
     payload["exclude"] = "daily,minutely,current,alerts"
     payload["lat"], payload["lon"], payload["lang"] = lat, lon, lang
     requested_weather = {"current": {}}
+    
     async with session.get("/data/2.5/onecall", params=payload) as resp:
         resp_json = await resp.json()
         await check_access_and_valid_error(resp_json, session)
         for weather in resp_json["hourly"]:
             if weather["dt"] == dt:
+                
                 requested_weather["current"].update(weather)
     return requested_weather 
 

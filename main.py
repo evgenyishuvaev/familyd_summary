@@ -9,11 +9,16 @@ from db_access.crud import (
     get_city_by_name_and_country_code,
     insert_weather
     )
-from db_access.schemas import Weather, WeatherIn, WeatherInCurrent, WeatherJSONResponse
+from db_access.schemas import Weather, WeatherIn, WeatherJSONResponse
 from db_access.exceptions import CRUDInvalidCityOrCountryCodeName, CRUDInvalidDateFormat
 
 from services.open_weather.api import get_weather_from_api
-from services.open_weather.exceptions import InvalidApiKey, InvalidDateFormat
+from services.open_weather.exceptions import (
+    InvalidApiKey,
+    InvalidDateFormat,
+    OutOfAllowedRangeDate,
+    OutOfAllowedTwoDaysRangeDate
+    )
 
 
 app = FastAPI()
@@ -27,6 +32,14 @@ async def invalid_api_handler(request: Request, exc: InvalidApiKey):
 async def invalid_date_fromat(request: Request, exc: InvalidDateFormat):
     return JSONResponse(status_code=exc.cod, content=exc.desc_json)
 
+@app.exception_handler(OutOfAllowedRangeDate)
+async def invalid_date_fromat(request: Request, exc: OutOfAllowedRangeDate):
+    return JSONResponse(status_code=400, content=exc.desc_json)
+
+@app.exception_handler(OutOfAllowedTwoDaysRangeDate)
+async def invalid_date_fromat(request: Request, exc: OutOfAllowedTwoDaysRangeDate):
+    return JSONResponse(status_code=400, content=exc.desc_json)
+
 @app.exception_handler(CRUDInvalidCityOrCountryCodeName)
 async def invalid_city_name(request: Request, exc: CRUDInvalidCityOrCountryCodeName):
     return JSONResponse(status_code=400, content= exc.desc_json)
@@ -39,6 +52,7 @@ async def invalid_city_name(request: Request, exc: CRUDInvalidDateFormat):
 @app.get("/create_db")
 async def create_db():
     init_db()
+    return JSONResponse(status_code=200, content={"result": "Успешно"})
 
 @app.get("/import_json")
 async def import_json():

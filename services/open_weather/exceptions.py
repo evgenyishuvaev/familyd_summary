@@ -21,3 +21,25 @@ class InvalidDateFormat(Exception):
             "code": cod,
             "message": self.desc
         }
+
+class OutOfAllowedRangeDate(Exception):
+    "Invalid date range of 5 days back"
+
+    def __init__(self, cod):
+        self.cod = cod
+        self.desc = "Requested time is out of allowed range of 5 days back!"
+        self.desc_json = {
+            "code": self.cod,
+            "message": self.desc
+        }
+    
+class OutOfAllowedTwoDaysRangeDate(Exception):
+    "Invalid date range of 48 hours forecast range"
+
+    def __init__(self, cod):
+        self.cod = cod
+        self.desc = "Requested time is out of allowed 48 hours forecast range!"
+        self.desc_json = {
+            "code": self.cod,
+            "message": self.desc
+        }
