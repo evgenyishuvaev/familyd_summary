@@ -73,6 +73,7 @@ async def get_and_return_weather(country_code: str, city: str, date: str):
                                             lang=country_code,
                                             dt=date
                                             )
+    print(resp_weather)
     weather = WeatherIn.parse_obj(resp_weather)
     await insert_weather(
         city_name=city,

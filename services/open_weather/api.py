@@ -46,9 +46,11 @@ async def get_weather_from_api(lat: float, lon: float, lang: str, dt: str):
     except ValueError:
         raise InvalidDateFormat(cod=400)
 
-    time_delta = date_time - datetime.now()
+    time_delta = int(date_time.timestamp() - datetime.now().timestamp())
 
-    if time_delta.days > 2:
+    print(time_delta)
+
+    if time_delta > 169200:
         raise OutOfAllowedTwoDaysRangeDate(cod=400)
 
     time_stamp = int(date_time.timestamp())
@@ -68,12 +70,13 @@ async def get_forecast_weather(lat: float, lon: float, lang: str, dt: int):
     
     async with session.get("/data/2.5/onecall", params=payload) as resp:
         resp_json = await resp.json()
+        print(resp_json)
         await check_access_and_valid_error(resp_json, session)
         for weather in resp_json["hourly"]:
+            print(weather["dt"], dt)
             if weather["dt"] == dt:
-                
                 requested_weather["current"].update(weather)
-    return requested_weather 
+        return requested_weather 
 
 
 async def get_historical_weather(lat: float, lon: float, lang: str, dt: int):
