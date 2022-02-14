@@ -29,15 +29,16 @@ python3.9 -m venv env_doc
 ```
 . env_doc/bin/activate
 ```
-3. Устонавливаем небходимые пакеты для работы проекта, которые берем из requirements.txt
+
+3. Клонируем репозиторий
+```
+git clone git@github.com:evgenyishuvaev/familyd_summary.git 
+```
+
+4. Устонавливаем небходимые пакеты для работы проекта, которые берем из requirements.txt
 
 ```
 pip install -r requirements.txt
-```
-
-4. Клонируем репозиторий
-```
-git clone git@github.com:evgenyishuvaev/familyd_summary.git 
 ```
 5. Переходим в директорию проекта, и задаем значение переменным, которые хранятся в файле .env.dist, перед этим неободимо переименовать это файл в .env, для того что бы проекта его обнаружил и подгрузил все переменные в проект.
 ```
